@@ -4,6 +4,7 @@ pkgver=0.1.0
 pkgrel=1
 pkgdesc="Can set pointer speed and extra scale past the desktop slider"
 arch=('x86_64')
+url="https://github.com/Obsidian-Jackal/MouseScales"
 license=('BSD-3-Clause')
 depends=('gtk4')
 optdepends=('xorg-xinput: X11 pointer speed and extra scale')

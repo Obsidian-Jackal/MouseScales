@@ -69,6 +69,7 @@ namespace MouseScales {
                 logo_icon_name = APP_ID,
                 version = APP_VERSION,
                 comments = "Can set pointer speed and extra scale on X11, plus reported DPI and Hyprland/Sway extras on Wayland.",
+                website = "https://github.com/Obsidian-Jackal/MouseScales",
                 copyright = "Copyright © 2026 Obsidian Jackal",
                 license_type = Gtk.License.BSD_3,
                 authors = { "Obsidian Jackal" }

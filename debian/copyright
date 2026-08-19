@@ -1,6 +1,7 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: mouse-scales
 Upstream-Contact: Obsidian Jackal <enkouyami@gmail.com>
+Source: https://github.com/Obsidian-Jackal/MouseScales
 
 Files: *
 Copyright: 2026 Obsidian Jackal

@@ -3,6 +3,7 @@ Version:        0.1.0
 Release:        1%{?dist}
 Summary:        Can set pointer speed and extra scale past the desktop slider
 License:        BSD-3-Clause
+URL:            https://github.com/Obsidian-Jackal/MouseScales
 Source0:        %{name}-%{version}.tar.gz
 
 BuildRequires:  meson
