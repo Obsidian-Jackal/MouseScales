@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=Mouse Scales
+Comment=Can set pointer speed and extra scale past the desktop slider max
+Exec=@bindir@/mouse-scales
+Icon=org.obsidian_jackal.MouseScales
+Terminal=false
+Categories=Settings;HardwareSettings;
+Keywords=mouse;pointer;speed;xinput;
+StartupNotify=true
+StartupWMClass=org.obsidian_jackal.MouseScales
+X-GNOME-UsesNotifications=true

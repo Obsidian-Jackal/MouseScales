@@ -1,0 +1,25 @@
+Source: mouse-scales
+Section: utils
+Priority: optional
+Maintainer: Obsidian Jackal <enkouyami@gmail.com>
+Build-Depends:
+ debhelper-compat (= 13),
+ meson,
+ ninja-build,
+ pkg-config,
+ valac,
+ libgtk-4-dev,
+ desktop-file-utils,
+ gtk-update-icon-cache
+Standards-Version: 4.7.0
+Rules-Requires-Root: no
+
+Package: mouse-scales
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Recommends: xinput
+Description: Can set pointer speed and extra scale past the desktop slider
+ GTK4 tool that can set pointer speed and extra scale past the desktop slider
+ maximum. On X11 it uses libinput Coordinate Transformation Matrix via
+ xinput. On Wayland it can set reported DPI and optional Hyprland/Sway
+ extras.

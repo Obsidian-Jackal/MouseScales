@@ -1,0 +1,9 @@
+/build/
+/builddir/
+/.flatpak-builder/
+/packaging/out/
+*.desktop
+!data/*.desktop.in
+*~
+*.swp
+.cursor/

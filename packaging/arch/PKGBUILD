@@ -1,0 +1,23 @@
+# Maintainer: Obsidian Jackal <enkouyami@gmail.com>
+pkgname=mouse-scales
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="Can set pointer speed and extra scale past the desktop slider"
+arch=('x86_64')
+license=('BSD-3-Clause')
+depends=('gtk4')
+optdepends=('xorg-xinput: X11 pointer speed and extra scale')
+makedepends=('meson' 'ninja' 'vala' 'pkgconf')
+source=("${pkgname}-${pkgver}.tar.gz")
+sha256sums=('SKIP')
+
+build() {
+  arch-meson "${pkgname}-${pkgver}" build
+  meson compile -C build
+}
+
+package() {
+  meson install -C build --destdir "${pkgdir}"
+  install -Dm644 "${pkgname}-${pkgver}/LICENSE" \
+    "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}

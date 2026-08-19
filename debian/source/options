@@ -1,0 +1,5 @@
+tar-ignore = build
+tar-ignore = builddir
+tar-ignore = packaging/out
+tar-ignore = .git
+tar-ignore = .cursor

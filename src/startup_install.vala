@@ -1,0 +1,169 @@
+namespace MouseScales {
+    /**
+     * Writes or removes the login apply script and Startup Applications entry
+     * under XDG data/config homes.
+     */
+    public class StartupInstall : Object {
+        public static string data_home() {
+            return Path.build_filename(Environment.get_user_data_dir(), "mouse-scales");
+        }
+
+        public static string config_home() {
+            return Environment.get_user_config_dir();
+        }
+
+        public static string apply_script_path() {
+            return Path.build_filename(data_home(), "apply-mouse-scales.sh");
+        }
+
+        public static string autostart_desktop_path() {
+            return Path.build_filename(
+                config_home(),
+                "autostart",
+                "mouse-scales.desktop"
+            );
+        }
+
+        public static string legacy_data_home() {
+            return Path.build_filename(Environment.get_user_data_dir(), "mouse-ctm-scale");
+        }
+
+        public static string legacy_apply_script_path() {
+            return Path.build_filename(legacy_data_home(), "apply-mouse-ctm.sh");
+        }
+
+        public static string legacy_autostart_desktop_path() {
+            return Path.build_filename(
+                config_home(),
+                "autostart",
+                "mouse-ctm-scale.desktop"
+            );
+        }
+
+        public static bool is_installed() {
+            return FileUtils.test(apply_script_path(), FileTest.EXISTS)
+                || FileUtils.test(autostart_desktop_path(), FileTest.EXISTS)
+                || FileUtils.test(legacy_apply_script_path(), FileTest.EXISTS)
+                || FileUtils.test(legacy_autostart_desktop_path(), FileTest.EXISTS);
+        }
+
+        public static void install(
+            string device_name,
+            double accel,
+            double scale,
+            AccelProfileKind profile,
+            int profile_slot_count
+        ) throws Error {
+            var data_dir = data_home();
+            DirUtils.create_with_parents(data_dir, 0700);
+
+            var script_path = apply_script_path();
+            var script_body = build_apply_script(
+                device_name,
+                accel,
+                scale,
+                profile,
+                profile_slot_count
+            );
+            FileUtils.set_contents(script_path, script_body);
+            Posix.chmod(script_path, 0700);
+
+            var autostart_dir = Path.build_filename(config_home(), "autostart");
+            DirUtils.create_with_parents(autostart_dir, 0755);
+
+            var desktop_path = autostart_desktop_path();
+            var desktop_body = """[Desktop Entry]
+Type=Application
+Name=Mouse Scales
+Comment=Can set pointer speed and extra scale past the desktop slider max
+Exec=%s
+Terminal=false
+X-GNOME-Autostart-enabled=true
+""".printf(script_path);
+            FileUtils.set_contents(desktop_path, desktop_body);
+            remove_legacy_files();
+        }
+
+        public static void remove() throws Error {
+            delete_if_exists(apply_script_path());
+            delete_if_exists(autostart_desktop_path());
+            remove_legacy_files();
+        }
+
+        static void remove_legacy_files() throws Error {
+            delete_if_exists(legacy_apply_script_path());
+            delete_if_exists(legacy_autostart_desktop_path());
+            var legacy_dir = File.new_for_path(legacy_data_home());
+            try {
+                legacy_dir.delete();
+            } catch (Error err) {
+            }
+        }
+
+        static void delete_if_exists(string path) throws Error {
+            var file = File.new_for_path(path);
+            try {
+                file.delete();
+            } catch (IOError.NOT_FOUND err) {
+                // Already gone.
+            }
+        }
+
+        static string shell_single_quote(string value) {
+            return "'" + value.replace("'", "'\"'\"'") + "'";
+        }
+
+        static string build_apply_script(
+            string device_name,
+            double accel,
+            double scale,
+            AccelProfileKind profile,
+            int profile_slot_count
+        ) {
+            var quoted_name = shell_single_quote(device_name);
+            var accel_text = "%.2f".printf(accel);
+            var scale_text = "%.1f".printf(scale);
+            var slot_count = profile_slot_count < 2 ? 2 : profile_slot_count;
+            var profile_parts = new GenericArray<string>();
+            for (int index = 0; index < slot_count; index++) {
+                int bit = 0;
+                if (profile == AccelProfileKind.ADAPTIVE && index == 0) {
+                    bit = 1;
+                } else if (profile == AccelProfileKind.CONSTANT && index == 1) {
+                    bit = 1;
+                }
+                profile_parts.add(bit.to_string());
+            }
+            var profile_csv = string.joinv(", ", profile_parts.data);
+
+            return """#!/usr/bin/env bash
+# Auto-generated by mouse-scales — pointer speed, profile, and Coordinate Transformation Matrix at login.
+# Matches the device by name (numeric ids can change across boots).
+# Coordinate Transformation Matrix: sx 0 0 | 0 sy 0 | 0 0 1  (w stays 1).
+
+set -euo pipefail
+
+DEVICE_NAME=%s
+ACCEL=%s
+SCALE=%s
+WAIT_SECONDS=2
+
+sleep "$WAIT_SECONDS"
+
+if [[ -z "${DISPLAY:-}" ]]; then
+  exit 0
+fi
+
+DEVICE_ID=$(xinput list --id-only "$DEVICE_NAME" 2>/dev/null || true)
+if [[ -z "$DEVICE_ID" ]]; then
+  exit 0
+fi
+
+xinput set-prop "$DEVICE_ID" 'libinput Accel Profile Enabled' %s
+xinput set-prop "$DEVICE_ID" 'libinput Accel Speed' "$ACCEL"
+xinput set-prop "$DEVICE_ID" 'Coordinate Transformation Matrix' \
+  "$SCALE" 0 0 0 "$SCALE" 0 0 0 1
+""".printf(quoted_name, accel_text, scale_text, profile_csv);
+        }
+    }
+}
